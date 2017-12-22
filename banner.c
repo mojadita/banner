@@ -589,9 +589,9 @@ static char *c_U[] = {
 static char *c_V[] = {
     "#     #",
     "#     #",
+    "#     #",
+    "#     #",
     " #   #",
-    " #   #",
-    "  # #",
     "  # #",
     "   #",
     0
@@ -915,13 +915,13 @@ static char *c_s[] = {
 };
 
 static char *c_t[] = {
-    "   #",
-    "   #",
-    "#######",
-    "   #",
-    "   #",
-    "   #",
-    "    ###",
+    "  #",
+    "  #",
+    "######",
+    "  #",
+    "  #",
+    "  #",
+    "   ###",
     0
 };
 
@@ -1097,9 +1097,11 @@ int main(int argc, char **argv)
 void process(FILE *f)
 {
     int i, h = 0;
-    char line[1024];
+    char line[BUFSIZ];
+
     for (i = 0; i < chars_n; i++) {
         int j;
+
         for (j = 0; chars[i].s[j]; j++) {
             int n = strlen(chars[i].s[j]);
             if (chars[i].w < n) chars[i].w = n;
@@ -1113,7 +1115,8 @@ void process(FILE *f)
             int j;
             for (j = 0; j < ll; j++) {
                 char c = line[j];
-                if (c < ' ' || c > '~') continue;
+                if (c < ' ' || c > '~')
+                    continue;
                 c -= ' ';
                 printf("%s%-*s",
                         j ? " " : "",
