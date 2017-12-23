@@ -13,6 +13,17 @@
 
 void process(FILE *f);
 
+static char *c_unknown[] = {
+    " ?????",
+    "?     ?",
+    "      ?",
+    "    ??",
+    "   ?",
+    "",
+    "   ?",
+    0
+};
+
 static char *c_space[] = {
     0
 };
@@ -37,6 +48,8 @@ static char *c_dquot[] = {
 };
 
 static char *c_hash[] = {
+    ""
+    ""
     "  # #",
     "  # #",
     "#######",
@@ -48,6 +61,8 @@ static char *c_hash[] = {
 };
 
 static char *c_dollar[] = {
+    ""
+    ""
     "  # #",
     " ######",
     "# # #",
@@ -59,12 +74,14 @@ static char *c_dollar[] = {
 };
 
 static char *c_percent[] = {
-    "##   #",
-    "##  #",
+    "       #",
+    " ##   #",
+    " ##  #",
+    "    #",
     "   #",
-    "  #",
-    " #  ##",
-    "#   ##",
+    "  #  ##",
+    " #   ##",
+    "#",
     0
 };
 
@@ -93,6 +110,7 @@ static char *c_lparen[] = {
     "#",
     "#",
     "#",
+    "#",
     " #",
     "  #",
     0
@@ -104,23 +122,25 @@ static char *c_rparen[] = {
     "  #",
     "  #",
     "  #",
+    "  #",
     " #",
     "#",
     0
 };
 
 static char *c_asterisk[] = {
-    "   #",
-    "#  #  #",
-    "  ###",
+    "",
+    "",
+    " #   #",
+    "  # #",
     "#######",
-    "  ###",
-    "#  #  #",
-    "   #",
+    "  # #",
+    " #   #",
     0
 };
 
 static char *c_plus[] = {
+    "",
     "",
     "   #",
     "   #",
@@ -131,6 +151,7 @@ static char *c_plus[] = {
 };
 
 static char *c_comma[] = {
+    "",
     "",
     "",
     "",
@@ -146,11 +167,13 @@ static char *c_minus[] = {
     "",
     "",
     "",
+    "",
     "#######",
     0
 };
 
 static char *c_dot[] = {
+    "",
     "",
     "",
     "",
@@ -161,6 +184,7 @@ static char *c_dot[] = {
 };
 
 static char *c_slash[] = {
+    "       #",
     "      #",
     "     #",
     "    #",
@@ -216,18 +240,18 @@ static char *c_3[] = {
 };
 
 static char *c_4[] = {
-    "    #",
-    "#   #",
+    "   ##",
+    "  # #",
+    " #  #",
     "#   #",
     "#######",
-    "    #",
     "    #",
     "    #",
     0
 };
 
 static char *c_5[] = {
-    "#######",
+    "######",
     "#",
     "#",
     "######",
@@ -249,8 +273,8 @@ static char *c_6[] = {
 };
 
 static char *c_7[] = {
-    "#######",
-    "      #",
+    " ######",
+    " #    #",
     "     #",
     "    #",
     "   #",
@@ -283,6 +307,7 @@ static char *c_9[] = {
 
 static char *c_colon[] = {
     "",
+    "",
     "##",
     "##",
     "",
@@ -292,6 +317,7 @@ static char *c_colon[] = {
 };
 
 static char *c_semicolon[] = {
+    "",
     "",
     "##",
     "##",
@@ -304,6 +330,7 @@ static char *c_semicolon[] = {
 };
 
 static char *c_less[] = {
+    "    #",
     "   #",
     "  #",
     " #",
@@ -311,6 +338,7 @@ static char *c_less[] = {
     " #",
     "  #",
     "   #",
+    "    #",
     0
 };
 
@@ -328,6 +356,8 @@ static char *c_greater[] = {
     "#",
     " #",
     "  #",
+    "   #",
+    "    #",
     "   #",
     "  #",
     " #",
@@ -648,6 +678,7 @@ static char *c_lbkt[] = {
     "#",
     "#",
     "#",
+    "#",
     "###",
     0
 };
@@ -660,6 +691,7 @@ static char *c_bslsh[] = {
     "    #",
     "     #",
     "      #",
+    "       #",
     0
 };
 
@@ -670,11 +702,13 @@ static char *c_rbkt[] = {
     "  #",
     "  #",
     "  #",
+    "  #",
     "###",
     0
 };
 
 static char *c_circunf[] = {
+    "",
     "  #",
     " # #",
     "#   #",
@@ -773,6 +807,7 @@ static char *c_g[] = {
     " #####",
     "#     #",
     "#     #",
+    "#     #",
     " ######",
     "      #",
     " #####",
@@ -804,6 +839,7 @@ static char *c_i[] = {
 static char *c_j[] = {
     "  #",
     "",
+    "  #",
     "  #",
     "  #",
     "  #",
@@ -874,6 +910,7 @@ static char *c_p[] = {
     "######",
     "#     #",
     "#     #",
+    "#     #",
     "######",
     "#",
     "#",
@@ -884,6 +921,7 @@ static char *c_q[] = {
     "",
     "",
     " ######",
+    "#     #",
     "#     #",
     "#     #",
     " ######",
@@ -962,9 +1000,9 @@ static char *c_x[] = {
     "",
     "",
     "#     #",
-    " ## ##",
-    "  ###",
-    " ## ##",
+    " #   #",
+    "   #",
+    " #   #",
     "#     #",
     0
 };
@@ -973,10 +1011,12 @@ static char *c_y[] = {
     "",
     "",
     "#     #",
-    " ## ##",
-    "  ###",
-    "   #",
-    "   #",
+    "#     #",
+    "#     #",
+    "#     #",
+    " ######",
+    "      #",
+    " #####",
     0
 };
 
@@ -984,9 +1024,9 @@ static char *c_z[] = {
     "",
     "",
     "########",
-    "     ##",
+    "      #",
     "   ##",
-    " ##",
+    " #",
     "########",
     0
 };
@@ -995,7 +1035,9 @@ static char *c_lcbkt[] = {
     "  ##",
     " #",
     " #",
+    " #",
     "#",
+    " #",
     " #",
     " #",
     "  ##",
@@ -1010,6 +1052,7 @@ static char *c_vbar[] = {
     "#",
     "#",
     "#",
+    "#",
     0
 };
 
@@ -1017,7 +1060,9 @@ static char *c_rcbkt[] = {
     "##",
     "  #",
     "  #",
+    "  #",
     "   #",
+    "  #",
     "  #",
     "  #",
     "##",
@@ -1025,14 +1070,12 @@ static char *c_rcbkt[] = {
 };
 
 static char *c_tilde[] = {
-    "",
-    "",
     " ###  #",
     "#   ##",
     0
 };
 
-static struct {
+static struct chrinfo {
     size_t w, h;
     char **s;
 } chars[] = {
@@ -1064,9 +1107,10 @@ static struct {
 	{0,0,c_v}, {0,0,c_w}, {0,0,c_x}, {0,0,c_y},
 	{0,0,c_z}, {0,0,c_lcbkt}, {0,0,c_vbar},
 	{0,0,c_rcbkt}, {0,0,c_tilde},
-};
-static size_t chars_n = sizeof chars / sizeof chars[0];
 
+    {0,0,c_unknown}
+};
+static size_t chars_n = (sizeof chars / sizeof chars[0]) - 1;
 
 int main(int argc, char **argv)
 {
@@ -1076,8 +1120,20 @@ int main(int argc, char **argv)
         } /* switch */
     } /* while */
     argc -= optind; argv += optind;
+
+    /* initialize table */
+    int i;
+    for (i = 0; i <= chars_n; i++) {
+        int j;
+
+        for (j = 0; chars[i].s[j]; j++) {
+            int n = strlen(chars[i].s[j]);
+            if (chars[i].w < n) chars[i].w = n;
+        } /* for */
+        chars[i].h = j;
+    } /* for */
+
     if (argc) {
-        int i;
         for (i = 0; i < argc; i++) {
             FILE *f = fopen(argv[i], "r");
             if (!f) {
@@ -1094,35 +1150,35 @@ int main(int argc, char **argv)
     } /* else */
 } /* main */
 
+static struct chrinfo *getchrinfo(unsigned char c)
+{
+    c -= ' ';
+    return chars + (c < chars_n ? c : chars_n);
+} /* getchrinfo */
+
 void process(FILE *f)
 {
-    int i, h = 0;
-    char line[BUFSIZ];
+    int i;
+    unsigned char line[BUFSIZ];
 
-    for (i = 0; i < chars_n; i++) {
-        int j;
-
-        for (j = 0; chars[i].s[j]; j++) {
-            int n = strlen(chars[i].s[j]);
-            if (chars[i].w < n) chars[i].w = n;
-        } /* for */
-        chars[i].h = j;
-        if (h < j) h = j;
-    } /* for */
     while (fgets(line, sizeof line, f)) {
-        size_t ll = strlen(line);
+        char *l = strtok(line, "\n");
+        size_t ll = strlen(l);
+        int h = 0;
+        for (i = 0; i < ll; i++) {
+            struct chrinfo *p = getchrinfo(l[i]);
+            if (h < p->h) h = p->h;
+        } /* for */
+            
         for (i = 0; i < h; i++) {
             int j;
             for (j = 0; j < ll; j++) {
-                char c = line[j];
-                if (c < ' ' || c > '~')
-                    continue;
-                c -= ' ';
+                struct chrinfo *p = getchrinfo(l[j]);
                 printf("%s%-*s",
                         j ? " " : "",
-                        chars[c].w,
-                        i < chars[c].h
-                            ? chars[c].s[i]
+                        p->w,
+                        i < p->h
+                            ? p->s[i]
                             : "");
             } /* for */
             puts("");
