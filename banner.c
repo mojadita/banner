@@ -1161,8 +1161,8 @@ void process(FILE *f)
     int i;
     unsigned char line[BUFSIZ];
 
-    while (fgets(line, sizeof line, f)) {
-        char *l = strtok(line, "\n");
+    while (fgets((char *)line, sizeof line, f)) {
+        char *l = strtok((char *)line, "\n");
         size_t ll = strlen(l);
         int h = 0;
         for (i = 0; i < ll; i++) {
