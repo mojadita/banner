@@ -593,6 +593,7 @@ static char *c_S[] = {
     "      #",
     "#     #",
     " #####",
+    0
 };
 
 static char *c_T[] = {
@@ -614,6 +615,7 @@ static char *c_U[] = {
     "#     #",
     "#     #",
     " #####",
+    0
 };
 
 static char *c_V[] = {
