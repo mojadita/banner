@@ -1158,18 +1158,19 @@ static struct chrinfo *getchrinfo(unsigned char c)
 
 void process(FILE *f)
 {
-    int i;
+	static long lineno = 0;
     unsigned char line[BUFSIZ];
 
     while (fgets((char *)line, sizeof line, f)) {
         char *l = strtok((char *)line, "\n");
         size_t ll = strlen(l);
-        int h = 0;
+        int i, h = 0;
         for (i = 0; i < ll; i++) {
             struct chrinfo *p = getchrinfo(l[i]);
             if (h < p->h) h = p->h;
         } /* for */
             
+		if (lineno++) puts("");
         for (i = 0; i < h; i++) {
             int j;
             for (j = 0; j < ll; j++) {
