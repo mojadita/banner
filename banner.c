@@ -1114,11 +1114,16 @@ static struct chrinfo {
 };
 static size_t chars_n = (sizeof chars / sizeof chars[0]) - 1;
 
+int flags = 0;
+#define FLAG_MONOSP (1 << 0)
+int max_width = 0;
+
 int main(int argc, char **argv)
 {
     int opt;
-    while ((opt = getopt(argc, argv, "")) != EOF) {
+    while ((opt = getopt(argc, argv, "m")) != EOF) {
         switch(opt) {
+        case 'm': flags |= FLAG_MONOSP; break;
         } /* switch */
     } /* while */
     argc -= optind; argv += optind;
@@ -1132,6 +1137,8 @@ int main(int argc, char **argv)
             int n = strlen(chars[i].s[j]);
             if (chars[i].w < n) chars[i].w = n;
         } /* for */
+        if (max_width < chars[i].w)
+            max_width = chars[i].w;
         chars[i].h = j;
     } /* for */
 
@@ -1167,19 +1174,29 @@ void process(FILE *f)
         char *l = strtok((char *)line, "\n");
         size_t ll = strlen(l);
         int i, h = 0;
+
         for (i = 0; i < ll; i++) {
             struct chrinfo *p = getchrinfo(l[i]);
             if (h < p->h) h = p->h;
         } /* for */
             
 		if (lineno++) puts("");
+
         for (i = 0; i < h; i++) {
             int j;
             for (j = 0; j < ll; j++) {
                 struct chrinfo *p = getchrinfo(l[j]);
-                printf("%s%-*s",
-                        j ? " " : "",
-                        p->w,
+                int pre1 = j 
+                        ? 1
+                        : 0,
+                    pre2 = flags & FLAG_MONOSP
+                        ? (max_width - p->w) >> 1
+                        : 0;
+                printf("%*s%-*s",
+                        pre1 + pre2, "",
+                        flags & FLAG_MONOSP
+                            ? max_width - pre2
+                            : p->w,
                         i < p->h
                             ? p->s[i]
                             : "");
