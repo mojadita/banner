@@ -3,6 +3,7 @@
  * Date: Fri Dec 22 02:48:29 EET 2017
  */
 
+#include <assert.h>
 #include <errno.h>
 #include <getopt.h>
 #include <stdio.h>
@@ -1175,13 +1176,13 @@ void process(FILE *f)
 {
 	static long lineno = 0;
     unsigned char line[BUFSIZ];
-    size_t last_l = 0;
-    size_t this_l = 0;
+    size_t last_l = 0, this_l = 0;
 
     while (fgets((char *)line, sizeof line, f)) {
         char *l = strtok((char *)line, "\n");
+        if (!l) l = "";
         size_t len = strlen(l);
-        this_l = (len - 1) * 2;
+        this_l = len ? (len - 1) * 2 : 0;
         int i, h = 0;
 
         for (i = 0; i < len; i++) {
@@ -1190,29 +1191,25 @@ void process(FILE *f)
             this_l += p->w;
         } /* for */
             
-        if (flags & FLAG_FRAME) {
-            static char *l = "/==", *r = "==\\\n";
+        if (flags & FLAG_FRAME && (last_l || this_l)) {
             if (last_l == 0) {
-                hor_line(this_l, l, r);
-            } else {
+                hor_line(this_l, "/==", "==\\\n");
+            } else if (this_l == 0) {
+                hor_line(last_l, "\\==", "==/\n");
+            } else if (last_l == this_l) {
+                hor_line(last_l, ">==", "==<\n");
+            } else { /* last_l != this_l, both != 0 */
                 size_t min = MIN(last_l, this_l);
                 size_t max = MAX(last_l, this_l);
                 hor_line(min + 2,
-                    l, last_l > this_l
+                    ">==", last_l > this_l
                         ? "v"
-                        : last_l < this_l
-                            ? "^"
-                            : "==<");
-                if (max != min) {
-                    hor_line(max - min - 3, "",
-                            last_l > this_l
-                                ? "==/\n"
-                                : last_l < this_l
-                                    ? "==\\\n"
-                                    : "==<\n");
-                } /* if */
+                        : "^");
+                hor_line(max - min - 1,
+                    "", last_l > this_l
+                        ? "/\n"
+                        : "\\\n");
             } /* else */
-            l = ">==", r = "==<\n";
         } else {
             if (lineno++) puts("");
         } /* if */
