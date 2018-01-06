@@ -11,8 +11,11 @@
 
 #define F(fmt) __FILE__":%d:%s: " fmt, __LINE__, __func__
 
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+
 void process(FILE *f);
-void hor_line(size_t l);
+void hor_line(size_t l, const char *lft, const char *rgt);
 
 static char *c_unknown[] = {
     " ?????",
@@ -1173,30 +1176,52 @@ void process(FILE *f)
 	static long lineno = 0;
     unsigned char line[BUFSIZ];
     size_t last_l = 0;
+    size_t this_l = 0;
 
     while (fgets((char *)line, sizeof line, f)) {
         char *l = strtok((char *)line, "\n");
-        size_t ll = strlen(l);
-        size_t cl = (ll - 1) * 2;
+        size_t len = strlen(l);
+        this_l = (len - 1) * 2;
         int i, h = 0;
 
-        for (i = 0; i < ll; i++) {
+        for (i = 0; i < len; i++) {
             struct chrinfo *p = getchrinfo(l[i]);
             if (h < p->h) h = p->h;
-            cl += p->w;
+            this_l += p->w;
         } /* for */
             
-		if (lineno++) puts("");
-
         if (flags & FLAG_FRAME) {
-            hor_line(cl);
+            static char *l = "/==", *r = "==\\\n";
+            if (last_l == 0) {
+                hor_line(this_l, l, r);
+            } else {
+                size_t min = MIN(last_l, this_l);
+                size_t max = MAX(last_l, this_l);
+                hor_line(min + 2,
+                    l, last_l > this_l
+                        ? "v"
+                        : last_l < this_l
+                            ? "^"
+                            : "==<");
+                if (max != min) {
+                    hor_line(max - min - 3, "",
+                            last_l > this_l
+                                ? "==/\n"
+                                : last_l < this_l
+                                    ? "==\\\n"
+                                    : "==<\n");
+                } /* if */
+            } /* else */
+            l = ">==", r = "==<\n";
+        } else {
+            if (lineno++) puts("");
         } /* if */
 
         for (i = 0; i < h; i++) {
             int j;
             if (flags & FLAG_FRAME)
                 printf("|> ");
-            for (j = 0; j < ll; j++) {
+            for (j = 0; j < len; j++) {
                 struct chrinfo *p = getchrinfo(l[j]);
                 int pre1 = j 
                         ? 2
@@ -1215,22 +1240,23 @@ void process(FILE *f)
             } /* for */
             puts(flags & FLAG_FRAME ? " <|" : "");
         } /* for */
-        if (flags & FLAG_FRAME) {
-            hor_line(cl);
-        } /* if */
+        last_l = this_l;
     } /* while */
+    if (flags & FLAG_FRAME) {
+        hor_line(this_l, "\\==", "==/\n");
+    } /* if */
 } /* process */
 
-void hor_line(size_t ll)
+void hor_line(size_t len, const char *lft, const char *rgt)
 {
     static char the_line[]=
 "=========================================================";
     static size_t the_line_size = sizeof the_line - 1;
-    printf("(@)");
-    while (ll > the_line_size) {
+    printf("%s", lft);
+    while (len > the_line_size) {
         printf(the_line);
-        ll -= the_line_size;
+        len -= the_line_size;
     } /* while */
-    /* ll <= the_line_size */
-    printf("%.*s(@)\n", ll, the_line);
+    /* len <= the_line_size */
+    printf("%.*s%s", len, the_line, rgt);
 } /* hor_line */
