@@ -1251,7 +1251,7 @@ void hor_line(size_t len, const char *lft, const char *rgt)
     static size_t the_line_size = sizeof the_line - 1;
     printf("%s", lft);
     while (len > the_line_size) {
-        printf(the_line);
+        printf("%s", the_line);
         len -= the_line_size;
     } /* while */
     /* len <= the_line_size */
