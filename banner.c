@@ -12,6 +12,7 @@
 #define F(fmt) __FILE__":%d:%s: " fmt, __LINE__, __func__
 
 void process(FILE *f);
+void hor_line(size_t l);
 
 static char *c_unknown[] = {
     " ?????",
@@ -990,8 +991,8 @@ static char *c_v[] = {
 static char *c_w[] = {
     "",
     "",
-    "#  #  #",
-    "#  #  #",
+    "#     #",
+    "#     #",
     "#  #  #",
     "#  #  #",
     " ## ##",
@@ -1116,13 +1117,15 @@ static size_t chars_n = (sizeof chars / sizeof chars[0]) - 1;
 
 int flags = 0;
 #define FLAG_MONOSP (1 << 0)
+#define FLAG_FRAME  (1 << 1)
 int max_width = 0;
 
 int main(int argc, char **argv)
 {
     int opt;
-    while ((opt = getopt(argc, argv, "m")) != EOF) {
+    while ((opt = getopt(argc, argv, "fm")) != EOF) {
         switch(opt) {
+        case 'f': flags |= FLAG_FRAME; break;
         case 'm': flags |= FLAG_MONOSP; break;
         } /* switch */
     } /* while */
@@ -1169,25 +1172,34 @@ void process(FILE *f)
 {
 	static long lineno = 0;
     unsigned char line[BUFSIZ];
+    size_t last_l = 0;
 
     while (fgets((char *)line, sizeof line, f)) {
         char *l = strtok((char *)line, "\n");
         size_t ll = strlen(l);
+        size_t cl = (ll - 1) * 2;
         int i, h = 0;
 
         for (i = 0; i < ll; i++) {
             struct chrinfo *p = getchrinfo(l[i]);
             if (h < p->h) h = p->h;
+            cl += p->w;
         } /* for */
             
 		if (lineno++) puts("");
 
+        if (flags & FLAG_FRAME) {
+            hor_line(cl);
+        } /* if */
+
         for (i = 0; i < h; i++) {
             int j;
+            if (flags & FLAG_FRAME)
+                printf("|> ");
             for (j = 0; j < ll; j++) {
                 struct chrinfo *p = getchrinfo(l[j]);
                 int pre1 = j 
-                        ? 1
+                        ? 2
                         : 0,
                     pre2 = flags & FLAG_MONOSP
                         ? (max_width - p->w) >> 1
@@ -1201,7 +1213,24 @@ void process(FILE *f)
                             ? p->s[i]
                             : "");
             } /* for */
-            puts("");
+            puts(flags & FLAG_FRAME ? " <|" : "");
         } /* for */
-    } /* for */
+        if (flags & FLAG_FRAME) {
+            hor_line(cl);
+        } /* if */
+    } /* while */
 } /* process */
+
+void hor_line(size_t ll)
+{
+    static char the_line[]=
+"=========================================================";
+    static size_t the_line_size = sizeof the_line - 1;
+    printf("(@)");
+    while (ll > the_line_size) {
+        printf(the_line);
+        ll -= the_line_size;
+    } /* while */
+    /* ll <= the_line_size */
+    printf("%.*s(@)\n", ll, the_line);
+} /* hor_line */
