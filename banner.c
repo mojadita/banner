@@ -1183,7 +1183,7 @@ void process(FILE *f)
         if (!l) l = "";
         size_t len = strlen(l);
         this_l = len ? (len - 1) * 2 : 0;
-        int i, h = 0;
+        int i, h = 7;
 
         for (i = 0; i < len; i++) {
             struct chrinfo *p = getchrinfo(l[i]);
@@ -1193,16 +1193,16 @@ void process(FILE *f)
             
         if (flags & FLAG_FRAME && (last_l || this_l)) {
             if (last_l == 0) {
-                hor_line(this_l, "/==", "==\\\n");
+                hor_line(this_l, "/=", "=\\\n");
             } else if (this_l == 0) {
-                hor_line(last_l, "\\==", "==/\n");
+                hor_line(last_l, "\\=", "=/\n");
             } else if (last_l == this_l) {
-                hor_line(last_l, ">==", "==<\n");
+                hor_line(last_l, ">=", "=<\n");
             } else { /* last_l != this_l, both != 0 */
                 size_t min = MIN(last_l, this_l);
                 size_t max = MAX(last_l, this_l);
-                hor_line(min + 2,
-                    ">==", last_l > this_l
+                hor_line(min + 1,
+                    ">=", last_l > this_l
                         ? "v"
                         : "^");
                 hor_line(max - min - 1,
@@ -1216,8 +1216,8 @@ void process(FILE *f)
 
         for (i = 0; i < h; i++) {
             int j;
-            if (flags & FLAG_FRAME)
-                printf("|> ");
+            if (flags & FLAG_FRAME && len)
+                printf("| ");
             for (j = 0; j < len; j++) {
                 struct chrinfo *p = getchrinfo(l[j]);
                 int pre1 = j 
@@ -1235,12 +1235,12 @@ void process(FILE *f)
                             ? p->s[i]
                             : "");
             } /* for */
-            puts(flags & FLAG_FRAME ? " <|" : "");
+            puts(flags & FLAG_FRAME && len ? " |" : "");
         } /* for */
         last_l = this_l;
     } /* while */
-    if (flags & FLAG_FRAME) {
-        hor_line(this_l, "\\==", "==/\n");
+    if (flags & FLAG_FRAME && last_l) {
+        hor_line(this_l, "\\=", "=/\n");
     } /* if */
 } /* process */
 
