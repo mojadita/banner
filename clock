@@ -4,13 +4,14 @@ do
 	D=`date "+%T %Z"`
 	if [ "$D" != "$OD" ]
 	then
-		echo -n "[9A"
+		[ -z "$OD" ] || echo -n "[9A"
 		echo "$D" | banner -f | sed '1s/^/[32m/
 									 $s/$/[m/
 									 s/#/[36m&/
 									 s/|$/[32m|/
-									 s/#/o/g'
+									 s/#/O/g'
+	else
+		sleep 0.1
 	fi
-	sleep 0.1
 	OD=$D
 done
