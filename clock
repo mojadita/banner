@@ -1,17 +1,32 @@
+#!/bin/sh
+# clock -- big clock on a text screen.
+# Author: Luis Colorado <luiscoloradourcola@gmail.com>
+# Date: Sun Mar 25 12:46:44 EEST 2018
+
+DATE=/bin/date
+ECHO=/bin/echo
+SLEEP=/bin/sleep
+WC=/usr/bin/wc
+
+FORMAT="w%W-j%j%n%d.%m.%y %a%n%H.%M.%S %Z"
+[ -z "$1" ] || FORMAT="$1"
+
 OD=""
 while true
 do
-	D=`date "+%T %Z"`
+	D="$(${DATE} "+${FORMAT}")"
 	if [ "$D" != "$OD" ]
 	then
-		[ -z "$OD" ] || echo -n "[9A"
-		echo "$D" | banner -f | sed '1s/^/[32m/
-									 $s/$/[m/
+		[ -z "$OD" ] || ${ECHO} -n "[${L}A"
+		O="$(${ECHO} "$D" | banner -f | sed '1s/^/[32m/
+		  							 $s/$/[m/
 									 s/#/[36m&/
 									 s/|$/[32m|/
-									 s/#/O/g'
+									 s/#/O/g')"
+		L="$(${ECHO} "$O" | ${WC} -l | sed 's/[ 	]*//')"
+		${ECHO} "$O"
 	else
-		sleep 0.1
+		${SLEEP} 0.1
 	fi
 	OD=$D
 done
