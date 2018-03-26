@@ -24,7 +24,7 @@ do
 									 s/|$/[32m|/
 									 s/#/O/g')"
 		L="$(${ECHO} "$O" | ${WC} -l | sed 's/[ 	]*//')"
-		${ECHO} "$O"
+		${ECHO} "$O" | sed 's/$/[K/'
 	else
 		${SLEEP} 0.1
 	fi
