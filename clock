@@ -8,7 +8,7 @@ ECHO=/bin/echo
 SLEEP=/bin/sleep
 WC=/usr/bin/wc
 
-FORMAT="w%W-j%j%n%d.%m.%y %a%n%H.%M.%S %Z"
+FORMAT="w%W-j%j%n%x %a%n%X %Z"
 [ -z "$1" ] || FORMAT="$1"
 
 OD=""
