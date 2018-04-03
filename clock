@@ -8,8 +8,29 @@ ECHO=/bin/echo
 SLEEP=/bin/sleep
 WC=/usr/bin/wc
 
-FORMAT="w%W-j%j%n%x %a%n%X %Z"
-[ -z "$1" ] || FORMAT="$1"
+
+[ -z "$1" ] || \
+while read name DELAY FORMAT
+do
+	[ "$name" = "$1" ] && break
+done <<EOF
+secs		0.1	%X
+short		2	%H:%M
+timezone	0.2	%X %Z
+unix		0.2	%s
+date		0.2	%x %a%n%X %Z
+EOF
+
+if [ -z "$1" ]
+then
+	FORMAT="w%W-j%j%n%x %a%n%X %Z"
+	DELAY="0.1"
+else if [ -z "$name" ]
+	then
+		FORMAT="$1"
+		DELAY="1"
+	fi
+fi
 
 OD=""
 while true
@@ -26,7 +47,7 @@ do
 		L="$(${ECHO} "$O" | ${WC} -l | sed 's/[ 	]*//')"
 		${ECHO} "$O" | sed 's/$/[K/'
 	else
-		${SLEEP} 0.1
+		${SLEEP} "$DELAY"
 	fi
 	OD=$D
 done
