@@ -14,9 +14,9 @@ while read name DELAY FORMAT
 do
 	[ "$name" = "$1" ] && break
 done <<EOF
-secs		0.1	%X
+time		0.1	%X
 short		2	%H:%M
-timezone	0.2	%X %Z
+w_timezone	0.2	%X %Z
 unix		0.2	%s
 date		0.2	%x %a%n%X %Z
 EOF
