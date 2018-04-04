@@ -12,7 +12,7 @@ DELAY=1
 
 if [ -z "$1" ]
 then
-	TYPE=short
+	TYPE=timezoned
 else
 	TYPE=$1
 fi
@@ -29,7 +29,7 @@ done <<EOF
 	dated		0.2	%x %a%n%X %Z
 EOF
 
-echo TYPE=$TYPE, DELAY=$DELAY, FORMAT=$FORMAT >&2
+# echo TYPE=$TYPE, DELAY=$DELAY, FORMAT=$FORMAT >&2
 
 OD=""
 while true
