@@ -9,6 +9,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <locale.h>
+#include <wchar.h>
 
 #define F(fmt) __FILE__":%d:%s: " fmt, __LINE__, __func__
 
@@ -17,6 +19,19 @@
 
 void process(FILE *f);
 void hor_line(size_t l, const char *lft, const char *rgt);
+
+struct chrinfo {
+    size_t w, h;
+    char **s;
+};
+
+struct range {
+	wchar_t	fst;
+	wchar_t	lst;
+	struct chrinfo *ci;
+};
+
+static struct chrinfo *getchrinfo(wchar_t c);
 
 static char *c_unknown[] = {
     " ?????",
@@ -1082,10 +1097,11 @@ static char *c_tilde[] = {
     0
 };
 
-static struct chrinfo {
-    size_t w, h;
-    char **s;
-} chars[] = {
+static struct chrinfo  ci_invalid[] = {
+	{0, 0, c_unknown,},
+};
+
+static struct chrinfo  latin1_0[] = {
     {7,0,c_space},
 	{0,0,c_exclam}, {0,0,c_dquot}, {0,0,c_hash},
 	{0,0,c_dollar}, {0,0,c_percent}, {0,0,c_ampers},
@@ -1114,10 +1130,28 @@ static struct chrinfo {
 	{0,0,c_v}, {0,0,c_w}, {0,0,c_x}, {0,0,c_y},
 	{0,0,c_z}, {0,0,c_lcbkt}, {0,0,c_vbar},
 	{0,0,c_rcbkt}, {0,0,c_tilde},
-
-    {0,0,c_unknown}
 };
-static size_t chars_n = (sizeof chars / sizeof chars[0]) - 1;
+
+struct range ranges[] = {
+	{ 0xfffe, 0xffff, ci_invalid },
+	{ ' ', 0x7f, latin1_0 },
+
+	{ 0, 0, NULL },
+};
+
+static struct chrinfo *getchrinfo(wchar_t c)
+{
+	struct range *p;
+
+	for (p = ranges; p->ci; p++) {
+		if (p->fst <= c & c < p->lst)
+			break;
+	}
+
+	return p->ci
+		? p->ci + (c - p->fst)
+		: ci_invalid;
+} /* getchrinfo */
 
 int flags = 0;
 #define FLAG_MONOSP (1 << 0)
@@ -1127,6 +1161,9 @@ int max_width = 0;
 int main(int argc, char **argv)
 {
     int opt;
+
+	setlocale(LC_ALL, "");
+
     while ((opt = getopt(argc, argv, "fm")) != EOF) {
         switch(opt) {
         case 'f': flags |= FLAG_FRAME; break;
@@ -1135,21 +1172,25 @@ int main(int argc, char **argv)
     } /* while */
     argc -= optind; argv += optind;
 
-    /* initialize table */
-    int i;
-    for (i = 0; i <= chars_n; i++) {
-        int j;
+    /* initialize tables */
+    struct range *r;
+    for (r = ranges; r->ci; r++) {
+		int c, i;
+		for (i = 0, c = r->fst; c < r->lst; i++, c++) {
+			int j;
 
-        for (j = 0; chars[i].s[j]; j++) {
-            int n = strlen(chars[i].s[j]);
-            if (chars[i].w < n) chars[i].w = n;
-        } /* for */
-        if (max_width < chars[i].w)
-            max_width = chars[i].w;
-        chars[i].h = j;
+			for (j = 0; r->ci[i].s[j]; j++) {
+				int n = strlen(r->ci[i].s[j]);
+				if (r->ci[i].w < n) r->ci[i].w = n;
+			} /* for */
+			if (max_width < r->ci[i].w)
+				max_width = r->ci[i].w;
+			r->ci[i].h = j;
+		} /* for */
     } /* for */
 
     if (argc) {
+		int i;
         for (i = 0; i < argc; i++) {
             FILE *f = fopen(argv[i], "r");
             if (!f) {
@@ -1166,22 +1207,17 @@ int main(int argc, char **argv)
     } /* else */
 } /* main */
 
-static struct chrinfo *getchrinfo(unsigned char c)
-{
-    c -= ' ';
-    return chars + (c < chars_n ? c : chars_n);
-} /* getchrinfo */
-
 void process(FILE *f)
 {
 	static long lineno = 0;
-    unsigned char line[BUFSIZ];
+    wchar_t line[BUFSIZ];
     size_t last_l = 0, this_l = 0;
 
-    while (fgets((char *)line, sizeof line, f)) {
-        char *l = strtok((char *)line, "\n");
-        if (!l) l = "";
-        size_t len = strlen(l);
+    while (fgetws(line, sizeof line, f)) {
+		wchar_t *ctx;
+        wchar_t *l = wcstok(line, L"\n", &ctx);
+        if (!l) l = L"";
+        size_t len = wcslen(l);
         this_l = len ? (len - 1) * 2 : 0;
         int i, h = 7;
 
