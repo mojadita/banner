@@ -7,8 +7,10 @@ DATE=/bin/date
 ECHO=/bin/echo
 SLEEP=/bin/sleep
 WC=/usr/bin/wc
-
-DELAY=1
+g="[32m"
+c="[36m"
+eol="[K"
+r="[m"
 
 if [ -z "$1" ]
 then
@@ -22,6 +24,7 @@ do
 	[ "$name" = "$TYPE" ] && break
 done <<EOF
 	complete	0.1 w%W-j%j%n%x %a%n%X %Z
+	full		0.1 w%W-j%j%n%x %a%n%X %Z
 	time		0.1	%X
 	short		2	%H:%M
 	timezoned	0.2	%X %Z
@@ -34,19 +37,19 @@ EOF
 OD=""
 while true
 do
-	D="$(${DATE} "+${FORMAT}")"
+	D="$(${DATE} "+${FORMAT:-${TYPE}}")"
 	if [ "$D" != "$OD" ]
 	then
 		[ -z "$OD" ] || ${ECHO} -n "[${L}A"
-		O="$(${ECHO} "$D" | banner -f | sed '1s/^/[32m/
-		  							 $s/$/[m/
-									 s/#/[36m&/
-									 s/|$/[32m|/
+		O="$(${ECHO} "$D" | banner -f | sed '1s/^/'"${g}"'/
+		  							 $s/$/'"${r}"'/
+									 s/#/'"${c}"'&/
+									 s/|$/'"${g}"'|/
 									 s/#/O/g')"
 		L="$(${ECHO} "$O" | ${WC} -l | sed 's/[ 	]*//')"
-		${ECHO} "$O" | sed 's/$/[K/'
+		${ECHO} "$O" | sed 's/$/'"${eol}"'/'
 	else
-		${SLEEP} "$DELAY"
+		${SLEEP} "${DELAY:-1}"
 	fi
 	OD=$D
 done
