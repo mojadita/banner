@@ -3,6 +3,7 @@
 # Author: Luis Colorado <luiscoloradourcola@gmail.com>
 # Date: Sun Mar 25 12:46:44 EEST 2018
 
+BANNEROPTS=-fu
 DATE=/bin/date
 ECHO=/bin/echo
 SLEEP=/bin/sleep
@@ -41,7 +42,7 @@ do
 	if [ "$D" != "$OD" ]
 	then
 		[ -z "$OD" ] || ${ECHO} -n "[${L}A"
-		O="$(${ECHO} "$D" | banner -f | sed '
+		O="$(${ECHO} "$D" | banner "${BANNEROPTS}" | sed '
 									1s/^/'"${g}"'/
 									s/#.*#/'"${c}&${g}"'/
 									s/#/0/g

@@ -2223,6 +2223,7 @@ static struct chrinfo *getchrinfo(wchar_t c)
 int flags = 0;
 #define FLAG_MONOSP (1 << 0)
 #define FLAG_FRAME  (1 << 1)
+#define FLAG_UTF	(1 << 2)
 int max_width = 0;
 
 int main(int argc, char **argv)
@@ -2231,10 +2232,11 @@ int main(int argc, char **argv)
 
 	setlocale(LC_ALL, "");
 
-    while ((opt = getopt(argc, argv, "fm")) != EOF) {
+    while ((opt = getopt(argc, argv, "fmu")) != EOF) {
         switch(opt) {
         case 'f': flags |= FLAG_FRAME; break;
         case 'm': flags |= FLAG_MONOSP; break;
+		case 'u': flags |= FLAG_UTF; break;
         } /* switch */
     } /* while */
     argc -= optind; argv += optind;
@@ -2298,48 +2300,52 @@ void process(FILE *f)
             
         if (flags & FLAG_FRAME && (last_l || this_l)) {
             if (last_l == 0) {
-#if UTF
-				hor_line(this_l, "\u2552\u2550", "\u2550\u2555\n");
-#else
-                hor_line(this_l, ",=", "=.\n");
-#endif
+				hor_line(this_l,
+					flags & FLAG_UTF
+						? "\u2552\u2550"
+						: ",=",
+					flags & FLAG_UTF
+						? "\u2550\u2555\n"
+						: "=.\n");
             } else if (this_l == 0) {
-#if UTF
-				hor_line(last_l, "\u2558\u2550", "\u2550\u255b\n");
-#else
-                hor_line(last_l, "`=", "='\n");
-#endif
+				hor_line(last_l,
+					flags & FLAG_UTF
+						? "\u2558\u2550"
+						: "`=",
+					flags & FLAG_UTF
+						? "\u2550\u255b\n"
+						: "='\n");
             } else if (last_l == this_l) {
-#if UTF
-				hor_line(last_l, "\u255e\u2550", "\u2550\u2561\n");
-#else
-                hor_line(last_l, ">=", "=<\n");
-#endif
+				hor_line(last_l,
+					flags & FLAG_UTF
+						? "\u255e\u2550"
+						: ">=",
+					flags & FLAG_UTF
+						? "\u2550\u2561\n"
+						: "=<\n");
             } else { /* last_l != this_l, both != 0 */
                 size_t min = MIN(last_l, this_l);
                 size_t max = MAX(last_l, this_l);
-#if UTF
                 hor_line(min + 1,
-					"\u255e\u2550",
-					last_l > this_l
-
-                        ? "\u2564"
-                        : "\u2567");
+					flags & FLAG_UTF
+						? "\u255e\u2550"
+						: ">=",
+					flags & FLAG_UTF
+						? last_l > this_l
+							? "\u2564"
+							: "\u2567"
+						: last_l > this_l
+							? "V"
+							: "^");
                 hor_line(max - min - 1,
-                    "", last_l > this_l
-                        ? "\u255b\n"
-                        : "\u2555\n");
-#else
-                hor_line(min + 1,
-                    ">=",
-					last_l > this_l
-                        ? "v"
-                        : "^");
-                hor_line(max - min - 1,
-                    "", last_l > this_l
-                        ? "'\n"
-                        : ".\n");
-#endif
+                    "",
+					flags & FLAG_UTF
+						? last_l > this_l
+							? "\u255b\n"
+							: "\u2555\n"
+						: last_l > this_l
+							? "'\n"
+							: ".\n");
             } /* else */
         } else {
             if (lineno++) puts("");
@@ -2348,11 +2354,9 @@ void process(FILE *f)
         for (i = 0; i < h; i++) {
             int j;
             if (flags & FLAG_FRAME && len)
-#if UTF
-				printf("\u2502 ");
-#else
-                printf("| ");
-#endif
+				printf(flags & FLAG_UTF
+					? "\u2502 "
+					: "| ");
             for (j = 0; j < len; j++) {
                 struct chrinfo *p = getchrinfo(l[j]);
                 int pre1 = j 
@@ -2370,37 +2374,35 @@ void process(FILE *f)
                             ? p->s[i]
                             : "");
             } /* for */
-#if UTF
-            puts(flags & FLAG_FRAME && len ? " \u2502" : "");
-#else
-            puts(flags & FLAG_FRAME && len ? " |" : "");
-#endif
+            puts(flags & FLAG_FRAME && len
+				? flags & FLAG_UTF
+					? " \u2502"
+					: " |"
+				: "");
         } /* for */
         last_l = this_l;
     } /* while */
     if (flags & FLAG_FRAME && last_l) {
-#if UTF
-        hor_line(this_l, "\u2558\u2550", "\u2550\u255b\n");
-#else
-        hor_line(this_l, "`=", "='\n");
-#endif
+        hor_line(this_l,
+			flags & FLAG_UTF
+				? "\u2558\u2550"
+				: "`=",
+			flags & FLAG_UTF
+				? "\u2550\u255b\n"
+				: "='\n");
     } /* if */
 } /* process */
 
 void hor_line(size_t len, const char *lft, const char *rgt)
 {
-#if UTF
-    static char the_line[]=
-"\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550"
-"\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550"
-"\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550"
-"\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550";
-	len *= 3;
-#else
-    static char the_line[]=
-"=========================================================";
-#endif
-    static size_t the_line_size = sizeof the_line - 1;
+	char *the_line = flags & FLAG_UTF
+		?  "\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550"
+		   "\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550"
+		   "\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550"
+		   "\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550"
+		:  "============================================================";
+	if (flags & FLAG_UTF) len *= 3;
+    size_t the_line_size = strlen(the_line);
     printf("%s", lft);
     while (len > the_line_size) {
         printf("%s", the_line);
