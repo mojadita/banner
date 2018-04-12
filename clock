@@ -41,13 +41,13 @@ do
 	if [ "$D" != "$OD" ]
 	then
 		[ -z "$OD" ] || ${ECHO} -n "[${L}A"
-		O="$(${ECHO} "$D" | banner -f | sed '1s/^/'"${g}"'/
-		  							 $s/$/'"${r}"'/
-									 s/#/'"${c}"'&/
-									 s/|$/'"${g}"'|/
-									 s/#/O/g')"
+		O="$(${ECHO} "$D" | banner -f | sed '
+									s/.*/'"${g}&${eol}"'/
+									s/#.*#/'"${c}&${g}"'/
+									s/#/O/g
+									$s/$/'"${r}"'/')"
 		L="$(${ECHO} "$O" | ${WC} -l | sed 's/[ 	]*//')"
-		${ECHO} "$O" | sed 's/$/'"${eol}"'/'
+		${ECHO} "$O"
 	else
 		${SLEEP} "${DELAY:-1}"
 	fi

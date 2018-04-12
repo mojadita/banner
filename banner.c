@@ -14,6 +14,10 @@
 
 #define F(fmt) __FILE__":%d:%s: " fmt, __LINE__, __func__
 
+#ifndef UTF
+#define UTF 0
+#endif
+
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
@@ -2294,22 +2298,48 @@ void process(FILE *f)
             
         if (flags & FLAG_FRAME && (last_l || this_l)) {
             if (last_l == 0) {
+#if UTF
+				hor_line(this_l, "\u2552\u2550", "\u2550\u2555\n");
+#else
                 hor_line(this_l, ",=", "=.\n");
+#endif
             } else if (this_l == 0) {
+#if UTF
+				hor_line(last_l, "\u2558\u2550", "\u2550\u255b\n");
+#else
                 hor_line(last_l, "`=", "='\n");
+#endif
             } else if (last_l == this_l) {
+#if UTF
+				hor_line(last_l, "\u255e\u2550", "\u2550\u2561\n");
+#else
                 hor_line(last_l, ">=", "=<\n");
+#endif
             } else { /* last_l != this_l, both != 0 */
                 size_t min = MIN(last_l, this_l);
                 size_t max = MAX(last_l, this_l);
+#if UTF
                 hor_line(min + 1,
-                    ">=", last_l > this_l
+					"\u255e\u2550",
+					last_l > this_l
+
+                        ? "\u2564"
+                        : "\u2567");
+                hor_line(max - min - 1,
+                    "", last_l > this_l
+                        ? "\u255b\n"
+                        : "\u2555\n");
+#else
+                hor_line(min + 1,
+                    ">=",
+					last_l > this_l
                         ? "v"
                         : "^");
                 hor_line(max - min - 1,
                     "", last_l > this_l
                         ? "'\n"
                         : ".\n");
+#endif
             } /* else */
         } else {
             if (lineno++) puts("");
@@ -2318,7 +2348,11 @@ void process(FILE *f)
         for (i = 0; i < h; i++) {
             int j;
             if (flags & FLAG_FRAME && len)
+#if UTF
+				printf("\u2502 ");
+#else
                 printf("| ");
+#endif
             for (j = 0; j < len; j++) {
                 struct chrinfo *p = getchrinfo(l[j]);
                 int pre1 = j 
@@ -2336,19 +2370,36 @@ void process(FILE *f)
                             ? p->s[i]
                             : "");
             } /* for */
+#if UTF
+            puts(flags & FLAG_FRAME && len ? " \u2502" : "");
+#else
             puts(flags & FLAG_FRAME && len ? " |" : "");
+#endif
         } /* for */
         last_l = this_l;
     } /* while */
     if (flags & FLAG_FRAME && last_l) {
+#if UTF
+        hor_line(this_l, "\u2558\u2550", "\u2550\u255b\n");
+#else
         hor_line(this_l, "`=", "='\n");
+#endif
     } /* if */
 } /* process */
 
 void hor_line(size_t len, const char *lft, const char *rgt)
 {
+#if UTF
+    static char the_line[]=
+"\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550"
+"\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550"
+"\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550"
+"\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550";
+	len *= 3;
+#else
     static char the_line[]=
 "=========================================================";
+#endif
     static size_t the_line_size = sizeof the_line - 1;
     printf("%s", lft);
     while (len > the_line_size) {
