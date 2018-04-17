@@ -35,7 +35,7 @@ c="[36m"
 eol="[K"
 r="[m"
 
-echo TYPE="$TYPE", DELAY="$DELAY", FORMAT="$FORMAT", BANNEROPTS="$BANNEROPTS" >&2
+# echo TYPE="$TYPE", DELAY="$DELAY", FORMAT="$FORMAT", BANNEROPTS="$BANNEROPTS" >&2
 
 OD=""
 while true
