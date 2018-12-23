@@ -2376,9 +2376,9 @@ void process(FILE *f)
                         : 0;
                 printf("%*s%-*s",
                         pre1 + pre2, "",
-                        flags & FLAG_MONOSP
+                        (int)(flags & FLAG_MONOSP
                             ? max_width - pre2
-                            : p->w,
+                            : p->w),
                         i < p->h
                             ? p->s[i]
                             : "");
@@ -2418,5 +2418,5 @@ void hor_line(size_t len, const char *lft, const char *rgt)
         len -= the_line_size;
     } /* while */
     /* len <= the_line_size */
-    printf("%.*s%s", len, the_line, rgt);
+    printf("%.*s%s", (int)len, the_line, rgt);
 } /* hor_line */
