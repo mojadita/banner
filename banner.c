@@ -2344,7 +2344,7 @@ void process(FILE *f)
 							? "\u2564"
 							: "\u2567"
 						: last_l > this_l
-							? "V"
+							? "v"
 							: "^");
                 hor_line(max - min - 1,
                     "",
