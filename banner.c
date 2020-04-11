@@ -2242,12 +2242,12 @@ int main(int argc, char **argv)
 
     setlocale(LC_ALL, "");
 
-    while ((opt = getopt(argc, argv, "fmu")) != EOF) {
+    while ((opt = getopt(argc, argv, "afmu")) != EOF) {
         switch(opt) {
+        case 'a': flags |= FLAG_ARGS_ARE_FILES; break;
         case 'f': flags |= FLAG_FRAME; break;
         case 'm': flags |= FLAG_MONOSP; break;
         case 'u': flags |= FLAG_UTF; break;
-        case 'a': flags |= FLAG_ARGS_ARE_FILES; break;
         } /* switch */
     } /* while */
 
