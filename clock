@@ -10,24 +10,24 @@ WC=/usr/bin/wc
 BANNER=`which banner`
 
 case "$1" in
-	-*) BANNEROPTS="$1"; shift;;
+    -*) BANNEROPTS="$1"; shift;;
 esac
 
 case "$1" in
-	complete|full)
-		DELAY=0.1; FORMAT="w%W-j%j%n%x %a%n%X %Z";;
-	time*)
-		DELAY=0.1; FORMAT="%X";;
-	short*)
-		DELAY=2; FORMAT="%H:%M";;
-	""|timez*)
-		DELAY=0.2; FORMAT="%X %Z";;
-	epoch|unix)
-		DELAY=0.2; FORMAT="%s";;
-	date*)
-		DELAY=0.2; FORMAT="%x %a%n%X %Z";;
-	*)
-		DELAY=1; FORMAT="$1";;
+    complete|full)
+        DELAY=0.1; FORMAT="w%W-j%j%n%x %a%n%X %Z";;
+    time*)
+        DELAY=0.1; FORMAT="%X";;
+    short*)
+        DELAY=2; FORMAT="%H:%M";;
+    ""|timez*)
+        DELAY=0.2; FORMAT="%X %Z";;
+    epoch|unix)
+        DELAY=0.2; FORMAT="%s";;
+    date*)
+        DELAY=0.2; FORMAT="%x %a%n%X %Z";;
+    *)
+        DELAY=1; FORMAT="$1";;
 esac
 
 g="[32m"
@@ -40,21 +40,21 @@ r="[m"
 OD=""
 while true
 do
-	D="$(${DATE} "+${FORMAT:-${TYPE}}")"
-	if [ "$D" != "$OD" ]
-	then
-		[ -z "$OD" ] || ${ECHO} -n "[${L}A"
-		O="$(${ECHO} "$D" | "${BANNER}" ${BANNEROPTS:--f} | sed '
-									1s/^/'"${g}"'/
-									s/#\(.*#\)*/'"${c}&${g}"'/
-									s/#/0/g
-									$s/$/'"${r}"'/
-									s/.*/'"&${eol}"'/
-									')"
-		L="$(${ECHO} "$O" | ${WC} -l | sed 's/[ 	]*//')"
-		${ECHO} "$O"
-	else
-		${SLEEP} "${DELAY:-1}"
-	fi
-	OD=$D
+    D="$(${DATE} "+${FORMAT:-${TYPE}}")"
+    if [ "$D" != "$OD" ]
+    then
+        [ -z "$OD" ] || ${ECHO} -n "[${L}A"
+        O="$(${ECHO} "$D" | "${BANNER}" ${BANNEROPTS:--f} | sed \
+								-e '1s/^/'"${g}"'/'				\
+								-e 's/#\(.*#\)*/'"${c}&${g}"'/'	\
+								-e 's/#/0/g'					\
+								-e '$s/$/'"${r}"'/'				\
+								-e 's/.*/'"&${eol}"'/'
+        					)"
+        L="$(${ECHO} "$O" | ${WC} -l | sed 's/[     ]*//')"
+        ${ECHO} "$O"
+    else
+        ${SLEEP} "${DELAY:-1}"
+    fi
+    OD=$D
 done

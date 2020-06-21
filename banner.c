@@ -21,8 +21,9 @@
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
-void process(FILE *f);
-void hor_line(size_t l, const char *lft, const char *rgt);
+static void process(FILE *f);
+static size_t proc_line( wchar_t *line, size_t last_l);
+static void hor_line(size_t l, const char *lft, const char *rgt);
 
 struct chrinfo {
     size_t w, h;
@@ -220,6 +221,7 @@ static char *c_slash[] = {
 };
 
 static char *c_0[] = {
+#if 0
     "  ###",
     " #   #",
     "#     #",
@@ -227,7 +229,7 @@ static char *c_0[] = {
     "#     #",
     " #   #",
     "  ###",
-#if 0
+#else
     "  ###",
     " #   #",
     "#   # #",
@@ -263,8 +265,8 @@ static char *c_2[] = {
 
 static char *c_3[] = {
     " #####",
-    " #   # ",
-    "    #  ",
+    " #   #",
+    "    #",
     "   ##",
     "     ##",
     "##   ##",
@@ -531,13 +533,13 @@ static char *c_J[] = {
 };
 
 static char *c_K[] = {
-    "#     #",
     "#    #",
     "#   #",
-    "####",
+    "#  #",
+    "###",
+    "#  #",
     "#   #",
     "#    #",
-    "#     #",
     0
 };
 
@@ -575,21 +577,21 @@ static char *c_N[] = {
 };
 
 static char *c_O[] = {
-    " #####",
-    "#     #",
-    "#     #",
-    "#     #",
-    "#     #",
-    "#     #",
-    " #####",
+    " ####",
+    "#    #",
+    "#    #",
+    "#    #",
+    "#    #",
+    "#    #",
+    " ####",
     0
 };
 
 static char *c_P[] = {
-    "######",
-    "#     #",
-    "#     #",
-    "######",
+    "#####",
+    "#    #",
+    "#    #",
+    "#####",
     "#",
     "#",
     "#",
@@ -597,35 +599,35 @@ static char *c_P[] = {
 };
 
 static char *c_Q[] = {
-    " #####",
-    "#     #",
-    "#     #",
-    "#     #",
-    "#   # #",
+    " ####",
     "#    #",
-    " #### #",
+    "#    #",
+    "#    #",
+    "#  # #",
+    "#   #",
+    " ### #",
     0
 };
 
 static char *c_R[] = {
-    "######",
-    "#     #",
-    "#     #",
-    "######",
-    "#     #",
-    "#     #",
-    "#     #",
+    "#####",
+    "#    #",
+    "#    #",
+    "#####",
+    "#  #",
+    "#   #",
+    "#    #",
     0
 };
 
 static char *c_S[] = {
-    " #####",
-    "#     #",
+    " ####",
+    "#    #",
     "#",
-    " #####",
-    "      #",
-    "#     #",
-    " #####",
+    " ####",
+    "     #",
+    "#    #",
+    " ####",
     0
 };
 
@@ -641,13 +643,13 @@ static char *c_T[] = {
 };
 
 static char *c_U[] = {
-    "#     #",
-    "#     #",
-    "#     #",
-    "#     #",
-    "#     #",
-    "#     #",
-    " #####",
+    "#    #",
+    "#    #",
+    "#    #",
+    "#    #",
+    "#    #",
+    "#    #",
+    " ####",
     0
 };
 
@@ -773,55 +775,55 @@ static char *c_lquot[] = {
 static char *c_a[] = {
     "",
     "",
+    " ####",
+    "     #",
     " #####",
-    "      #",
-    " ######",
-    "#     #",
-    " ##### #",
+    "#    #",
+    " #### #",
     0
 };
 
 static char *c_b[] = {
     "#",
     "#",
-    "######",
-    "#     #",
-    "#     #",
-    "#     #",
-    "######",
+    "#####",
+    "#    #",
+    "#    #",
+    "#    #",
+    "#####",
     0
 };
 
 static char *c_c[] = {
     "",
     "",
-    " #####",
-    "#     #",
+    " ####",
+    "#    #",
     "#",
     "#",
-    " #####",
+    " ####",
     0
 };
 
 static char *c_d[] = {
-    "      #",
-    "      #",
+    "     #",
+    "     #",
+    " #####",
+    "#    #",
+    "#    #",
+    "#    #",
     " ######",
-    "#     #",
-    "#     #",
-    "#     #",
-    " #######",
     0
 };
 
 static char *c_e[] = {
     "",
     "",
-    " #####",
-    "#     #",
-    "######",
+    " ####",
+    "#    #",
+    "#####",
     "#",
-    " ######",
+    " #####",
     0
 };
 
@@ -839,11 +841,11 @@ static char *c_f[] = {
 static char *c_g[] = {
     "",
     "",
+    " ####",
+    "#    #",
+    "#    #",
+    "#    #",
     " #####",
-    "#     #",
-    "#     #",
-    "#     #",
-    " ######",
     "      #",
     " #####",
     0
@@ -852,11 +854,11 @@ static char *c_g[] = {
 static char *c_h[] = {
     "#",
     "#",
-    "######",
-    "#     #",
-    "#     #",
-    "#     #",
-    "#     #",
+    "#####",
+    "#    #",
+    "#    #",
+    "#    #",
+    "#    #",
     0
 };
 
@@ -920,33 +922,33 @@ static char *c_m[] = {
 static char *c_n[] = {
     "",
     "",
-    "# ####",
-    "##    #",
-    "#     #",
-    "#     #",
-    "#     #",
+    "# ###",
+    "##   #",
+    "#    #",
+    "#    #",
+    "#    #",
     0
 };
 
 static char *c_o[] = {
     "",
     "",
-    " #####",
-    "#     #",
-    "#     #",
-    "#     #",
-    " #####",
+    " ####",
+    "#    #",
+    "#    #",
+    "#    #",
+    " ####",
     0
 };
 
 static char *c_p[] = {
     "",
     "",
-    "######",
-    "#     #",
-    "#     #",
-    "#     #",
-    "######",
+    "#####",
+    "#    #",
+    "#    #",
+    "#    #",
+    "#####",
     "#",
     "#",
     0
@@ -955,21 +957,21 @@ static char *c_p[] = {
 static char *c_q[] = {
     "",
     "",
-    " ######",
-    "#     #",
-    "#     #",
-    "#     #",
-    " ######",
-    "      #",
-    "      #",
+    " #####",
+    "#    #",
+    "#    #",
+    "#    #",
+    " #####",
+    "     #",
+    "     #",
     0
 };
 
 static char *c_r[] = {
     "",
     "",
-    "# #### ",
-    "##   ##",
+    "# ### ",
+    "##  ##",
     "#",
     "#",
     "#",
@@ -979,11 +981,11 @@ static char *c_r[] = {
 static char *c_s[] = {
     "",
     "",
-    " ######",
-    "#",
     " #####",
-    "      #",
-    "######",
+    "#",
+    " ####",
+    "     #",
+    "#####",
     0
 };
 
@@ -1034,35 +1036,35 @@ static char *c_w[] = {
 static char *c_x[] = {
     "",
     "",
-    "#     #",
-    " #   #",
-    "   #",
-    " #   #",
-    "#     #",
+    "#   #",
+    " # #",
+    "  #",
+    " # #",
+    "#   #",
     0
 };
 
 static char *c_y[] = {
     "",
     "",
-    "#     #",
-    "#     #",
-    "#     #",
-    "#     #",
-    " ######",
-    "      #",
+    "#    #",
+    "#    #",
+    "#    #",
+    "#    #",
     " #####",
+    "     #",
+    " ####",
     0
 };
 
 static char *c_z[] = {
     "",
     "",
-    "########",
-    "      #",
-    "   ##",
+    "#####",
+    "   #",
+    "  #",
     " #",
-    "########",
+    "#####",
     0
 };
 
@@ -1105,8 +1107,8 @@ static char *c_rcbkt[] = {
 };
 
 static char *c_tilde[] = {
-    " ###  #",
-    "#   ##",
+    " ##  #",
+    "#  ##",
     0
 };
 
@@ -1136,13 +1138,13 @@ static char *c_cent[] = {
 };
 
 static char *c_pound[] = {
-    "   ####",
-    "  #    #",
-    "  #",
-    " #####",
-    "  #",
-    "  #    #",
-    "########",
+    "  ###",
+    " #   #",
+    " #",
+    "####",
+    " #",
+    " #    #",
+    "######",
     0,
 };
 
@@ -1193,8 +1195,8 @@ static char *c_section[] = {
 };
 
 static char *c_diaeresis[] = {
-    "##   ##",
-    "##   ##",
+    "##  ##",
+    "##  ##",
     0
 };
 
@@ -1276,11 +1278,11 @@ static char *c_degree[] = {
 
 static char *c_plusminus[] = {
     "",
-    "",
     "   #",
     "   #",
     "#######",
-    "   # ",
+    "   #",
+    "   #",
     "#######",
     0
 };
@@ -1296,10 +1298,10 @@ static char *c_sup2[] = {
 
 static char *c_sup3[] = {
     " ####",
-    "#    #",
-    "   ##",
-    "#    #",
-    " ####",
+    "   #",
+    "  ##",
+    "#   #",
+    " ###",
     0
 };
 
@@ -1313,11 +1315,11 @@ static char *c_acute[] = {
 static char *c_micro[] = {
     "",
     "",
-    "#    #",
-    "#    #",
-    "#    #",
-    "#    #",
-    "##### #",
+    "#   #",
+    "#   #",
+    "#   #",
+    "#   #",
+    "#### #",
     "#",
     "#",
     0
@@ -1366,11 +1368,11 @@ static char *c_sup1[] = {
 };
 
 static char *c_mascord[] = {
-    " ####",
-    "#    #",
-    " ####",
+    " ###",
+    "#   #",
+    " ###",
     "",
-    "######",
+    "#####",
     0
 };
 
@@ -1498,13 +1500,13 @@ static char *c_Aring[] = {
 };
 
 static char *c_AE[] = {
-    "   #####",
-    "  ##",
-    " # #",
-    "#  ####",
-    "####",
-    "#  #",
-    "#  #####",
+    "   ######",
+    "  # #",
+    " #  #",
+    "#   ####",
+    "#####",
+    "#   #",
+    "#   #####",
     0
 };
 
@@ -1568,8 +1570,8 @@ static char *c_Ediaer[] = {
 static char *c_Igrave[] = {
     "#",
     " #",
+	"",
     "###",
-    " #",
     " #",
     " #",
     "###",
@@ -1579,8 +1581,8 @@ static char *c_Igrave[] = {
 static char *c_Iacute[] = {
     "  #",
     " #",
+	"",
     "###",
-    " #",
     " #",
     " #",
     "###",
@@ -1789,66 +1791,66 @@ static char *c_ssharp[] = {
 static char *c_agrave[] = {
     "  #",
     "   #",
+    " ####",
+    "     #",
     " #####",
-    "      #",
-    " ######",
-    "#     #",
-    " ##### #",
+    "#    #",
+    " #### #",
     0
 };
 
 static char *c_aacute[] = {
     "    #",
     "   #",
+    " ####",
+    "     #",
     " #####",
-    "      #",
-    " ######",
-    "#     #",
-    " ##### #",
+    "#    #",
+    " #### #",
     0
 };
 
 static char *c_acirc[] = {
     "   #",
     "  # #",
+    " ####",
+    "     #",
     " #####",
-    "      #",
-    " ######",
-    "#     #",
-    " ##### #",
+    "#    #",
+    " #### #",
     0
 };
 
 static char *c_atilde[] = {
-    "  ### #",
-    " #   #",
+    " ### #",
+    "#   #",
+    " ####",
+    "     #",
     " #####",
-    "      #",
-    " ######",
-    "#     #",
-    " ##### #",
+    "#    #",
+    " #### #",
     0
 };
 
 static char *c_adiaer[] = {
-    " #    #",
+    " #   #",
     "",
+    " ####",
+    "     #",
     " #####",
-    "      #",
-    " ######",
-    "#     #",
-    " ##### #",
+    "#    #",
+    " #### #",
     0
 };
 
 static char *c_aring[] = {
     "  ###",
     "  # #",
+    " ####",
+    "     #",
     " #####",
-    "      #",
-    " ######",
-    "#     #",
-    " ##### #",
+    "#    #",
+    " #### #",
     0
 };
 
@@ -1866,57 +1868,57 @@ static char *c_ae[] = {
 static char *c_ccedil[] = {
     "",
     "",
-    " #####",
-    "#     #",
+    " ####",
+    "#    #",
     "#",
     "#",
-    " #####",
-    "   #",
+    " ####",
     "  #",
+    " #",
     0
 };
 
 static char *c_egrave[] = {
     "  #",
     "   #",
-    " #####",
-    "#     #",
-    "######",
+    " ####",
+    "#    #",
+    "#####",
     "#",
-    " ######",
+    " #####",
     0
 };
 
 static char *c_eacute[] = {
     "    #",
     "   #",
-    " #####",
-    "#     #",
-    "######",
+    " ####",
+    "#    #",
+    "#####",
     "#",
-    " ######",
+    " #####",
     0
 };
 
 static char *c_ecirc[] = {
     "   #",
     "  # #",
-    " #####",
-    "#     #",
-    "######",
+    " ####",
+    "#    #",
+    "#####",
     "#",
-    " ######",
+    " #####",
     0
 };
 
 static char *c_ediaer[] = {
-    " #   #",
+    " #  #",
     "",
-    " #####",
-    "#     #",
-    "######",
+    " ####",
+    "#    #",
+    "#####",
     "#",
-    " ######",
+    " #####",
     0
 };
 
@@ -1976,68 +1978,68 @@ static char *c_eth[] = {
 };
 
 static char *c_ntilde[] = {
-    "#   ##",
-    " ###  #",
+    "#  ##",
+    " ##  #",
     "",
-    "# ####",
-    "##    #",
-    "#     #",
-    "#     #",
+    "# ###",
+    "##   #",
+    "#    #",
+    "#    #",
     0
 };
 
 static char *c_ograve[] = {
     "  #",
     "   #",
-    " #####",
-    "#     #",
-    "#     #",
-    "#     #",
-    " #####",
+    " ####",
+    "#    #",
+    "#    #",
+    "#    #",
+    " ####",
     0
 };
 
 static char *c_oacute[] = {
     "    #",
     "   #",
-    " #####",
-    "#     #",
-    "#     #",
-    "#     #",
-    " #####",
+    " ####",
+    "#    #",
+    "#    #",
+    "#    #",
+    " ####",
     0
 };
 
 static char *c_ocirc[] = {
     "   #",
     "  # #",
-    " #####",
-    "#     #",
-    "#     #",
-    "#     #",
-    " #####",
+    " ####",
+    "#    #",
+    "#    #",
+    "#    #",
+    " ####",
     0
 };
 
 static char *c_otilde[] = {
-    "#  ###",
-    " ##   #",
-    " #####",
-    "#     #",
-    "#     #",
-    "#     #",
-    " #####",
+    "#  ##",
+    " ##  #",
+    " ####",
+    "#    #",
+    "#    #",
+    "#    #",
+    " ####",
     0
 };
 
 static char *c_odiaer[] = {
-    " #   #",
+    " #  #",
     "",
-    " #####",
-    "#     #",
-    "#     #",
-    "#     #",
-    " #####",
+    " ####",
+    "#    #",
+    "#    #",
+    "#    #",
+    " ####",
     0
 };
 
@@ -2066,57 +2068,57 @@ static char *c_ostroke[] = {
 static char *c_ugrave[] = {
     "  #",
     "   #",
-    "#    #",
-    "#    #",
-    "#    #",
-    "#    #",
-    " #### #",
+    "#   #",
+    "#   #",
+    "#   #",
+    "#   #",
+    " ### #",
     0
 };
 
 static char *c_uacute[] = {
     "   #",
     "  #",
-    "#    #",
-    "#    #",
-    "#    #",
-    "#    #",
-    " #### #",
+    "#   #",
+    "#   #",
+    "#   #",
+    "#   #",
+    " ### #",
     0
 };
 
 static char *c_ucirc[] = {
-    "   #",
-    "  # #",
-    "#    #",
-    "#    #",
-    "#    #",
-    "#    #",
-    " #### #",
+    "  #",
+    " # #",
+    "#   #",
+    "#   #",
+    "#   #",
+    "#   #",
+    " ### #",
     0
 };
 
 static char *c_udiaer[] = {
-    "#    #",
+    "#   #",
     "",
-    "#    #",
-    "#    #",
-    "#    #",
-    "#    #",
-    " #### #",
+    "#   #",
+    "#   #",
+    "#   #",
+    "#   #",
+    " ### #",
     0
 };
 
 static char *c_yacute[] = {
-    "    #",
     "   #",
-    "#     #",
-    "#     #",
-    "#     #",
-    "#     #",
-    " ######",
-    "      #",
+    "  #",
+    "#    #",
+    "#    #",
+    "#    #",
+    "#    #",
     " #####",
+    "     #",
+    " ####",
     0
 };
 
@@ -2124,24 +2126,24 @@ static char *c_thorn[] = {
     "",
     "",
     "#",
-    "######",
-    "#     #",
-    "#     #",
-    "######",
+    "#####",
+    "#    #",
+    "#    #",
+    "#####",
     "#",
     0
 };
 
 static char *c_ydiaer[] = {
-    "#     #",
+    "#    #",
     "",
     "",
-    "#     #",
-    "#     #",
-    "#     #",
-    " ######",
-    "      #",
+    "#    #",
+    "#    #",
+    "#    #",
     " #####",
+    "     #",
+    " ####",
     0
 };
 
@@ -2207,7 +2209,7 @@ static struct chrinfo latin1_1[] = {
     /* 0xFC */ {0,0,c_udiaer},{0,0,c_yacute},{0,0,c_thorn},{0,0,c_ydiaer},
 };
 
-struct range ranges[] = {
+static struct range ranges[] = {
     { 0xfffe, 0xffff, ci_invalid },
     { ' ', 0x7f, latin1_0 },
     { 0xa0, 0xff, latin1_1 },
@@ -2215,7 +2217,9 @@ struct range ranges[] = {
     { 0, 0, NULL },
 };
 
-static struct chrinfo *getchrinfo(wchar_t c)
+static struct chrinfo *
+getchrinfo(
+        wchar_t c)
 {
     struct range *p;
 
@@ -2236,7 +2240,10 @@ int flags = 0;
 #define FLAG_ARGS_ARE_FILES (1 << 3)
 int max_width = 0;
 
-int main(int argc, char **argv)
+int
+main(
+        int argc,
+        char **argv)
 {
     int opt;
 
@@ -2271,8 +2278,8 @@ int main(int argc, char **argv)
     } /* for */
 
     if (argc) {
+        int i;
         if (flags & FLAG_ARGS_ARE_FILES) {
-            int i;
             for (i = 0; i < argc; i++) {
                 FILE *f = fopen(argv[i], "r");
                 if (!f) {
@@ -2285,122 +2292,152 @@ int main(int argc, char **argv)
                 fclose(f);
             }
         } else { /* ARGS are arguments */
-            fprintf(stderr,
-                F("Unimplemented yet\n"));
-        }
-    } else {
-        process(stdin);
-    } /* else */
-} /* main */
-
-void process(FILE *f)
-{
-    static long lineno = 0;
-    wchar_t line[BUFSIZ];
-    size_t last_l = 0, this_l = 0;
-
-    while (fgetws(line, sizeof line, f)) {
-        wchar_t *ctx;
-        wchar_t *l = wcstok(line, L"\n", &ctx);
-        if (!l) l = L"";
-        size_t len = wcslen(l);
-        this_l = len ? (len - 1) * 2 : 0;
-        int i, h = 7;
-
-        for (i = 0; i < len; i++) {
-            struct chrinfo *p = getchrinfo(l[i]);
-            if (h < p->h) h = p->h;
-            this_l += flags & FLAG_MONOSP
-                ? max_width
-                : p->w;
-        } /* for */
-
-        if (flags & FLAG_FRAME && (last_l || this_l)) {
-            if (last_l == 0) {
-                hor_line(this_l,
-                    flags & FLAG_UTF
-                        ? "\u2552\u2550"
-                        : ",=",
-                    flags & FLAG_UTF
-                        ? "\u2550\u2555\n"
-                        : "=.\n");
-            } else if (this_l == 0) {
-                hor_line(last_l,
+            size_t line_l = 0;
+            for (i = 0; i < argc; i++) {
+#define NELEM(_line) (sizeof (_line) / sizeof (_line)[0])
+                wchar_t line[1024], *p = line;
+                mbstate_t st;
+                size_t l = mbsrtowcs(
+                        line, &argv[i],
+                        strlen(argv[i]), &st);
+                line[l] = 0;
+                line_l = proc_line(line, line_l);
+#undef NELEM
+            }
+            if (flags & FLAG_FRAME && line_l) {
+                hor_line(line_l,
                     flags & FLAG_UTF
                         ? "\u2558\u2550"
                         : "`=",
                     flags & FLAG_UTF
                         ? "\u2550\u255b\n"
                         : "='\n");
-            } else if (last_l == this_l) {
-                hor_line(last_l,
-                    flags & FLAG_UTF
-                        ? "\u255e\u2550"
-                        : ">=",
-                    flags & FLAG_UTF
-                        ? "\u2550\u2561\n"
-                        : "=<\n");
-            } else { /* last_l != this_l, both != 0 */
-                size_t min = MIN(last_l, this_l);
-                size_t max = MAX(last_l, this_l);
-                hor_line(min + 1,
-                    flags & FLAG_UTF
-                        ? "\u255e\u2550"
-                        : ">=",
-                    flags & FLAG_UTF
-                        ? last_l > this_l
-                            ? "\u2564"
-                            : "\u2567"
-                        : last_l > this_l
-                            ? "v"
-                            : "^");
-                hor_line(max - min - 1,
-                    "",
-                    flags & FLAG_UTF
-                        ? last_l > this_l
-                            ? "\u255b\n"
-                            : "\u2555\n"
-                        : last_l > this_l
-                            ? "'\n"
-                            : ".\n");
-            } /* else */
-        } else {
-            if (lineno++) puts("");
-        } /* if */
+            } /* if */
+        }
+    } else {
+        process(stdin);
+    } /* else */
+} /* main */
 
-        for (i = 0; i < h; i++) {
-            int j;
-            if (flags & FLAG_FRAME && len)
-                printf(flags & FLAG_UTF
-                    ? "\u2502 "
-                    : "| ");
-            for (j = 0; j < len; j++) {
-                struct chrinfo *p = getchrinfo(l[j]);
-                int pre1 = j
-                        ? 2
-                        : 0,
-                    pre2 = flags & FLAG_MONOSP
-                        ? (max_width - p->w) >> 1
-                        : 0;
-                printf("%*s%-*s",
-                        pre1 + pre2, "",
-                        (int)(flags & FLAG_MONOSP
-                            ? max_width - pre2
-                            : p->w),
-                        i < p->h
-                            ? p->s[i]
-                            : "");
-            } /* for */
-            puts(flags & FLAG_FRAME && len
-                ? flags & FLAG_UTF
-                    ? " \u2502"
-                    : " |"
-                : "");
+static size_t
+proc_line(
+        wchar_t *line,
+        size_t last_l)
+{
+    static long lineno = 0;
+    size_t this_l = 0;
+    wchar_t *ctx;
+    wchar_t *l = wcstok(line, L"\n", &ctx);
+    if (!l) l = L"";
+    size_t len = wcslen(l);
+    this_l = len ? (len - 1) * 2 : 0;
+    int i, h = 7;
+
+    for (i = 0; i < len; i++) {
+        struct chrinfo *p = getchrinfo(l[i]);
+        if (h < p->h) h = p->h;
+        this_l += flags & FLAG_MONOSP
+            ? max_width
+            : p->w;
+    } /* for */
+
+    if (flags & FLAG_FRAME && (last_l || this_l)) {
+        if (last_l == 0) {
+            hor_line(this_l,
+                flags & FLAG_UTF
+                    ? "\u2552\u2550"
+                    : ",=",
+                flags & FLAG_UTF
+                    ? "\u2550\u2555\n"
+                    : "=.\n");
+        } else if (this_l == 0) {
+            hor_line(last_l,
+                flags & FLAG_UTF
+                    ? "\u2558\u2550"
+                    : "`=",
+                flags & FLAG_UTF
+                    ? "\u2550\u255b\n"
+                    : "='\n");
+        } else if (last_l == this_l) {
+            hor_line(last_l,
+                flags & FLAG_UTF
+                    ? "\u255e\u2550"
+                    : ">=",
+                flags & FLAG_UTF
+                    ? "\u2550\u2561\n"
+                    : "=<\n");
+        } else { /* last_l != this_l, both != 0 */
+            size_t min = MIN(last_l, this_l);
+            size_t max = MAX(last_l, this_l);
+            hor_line(min + 1,
+                flags & FLAG_UTF
+                    ? "\u255e\u2550"
+                    : ">=",
+                flags & FLAG_UTF
+                    ? last_l > this_l
+                        ? "\u2564"
+                        : "\u2567"
+                    : last_l > this_l
+                        ? "v"
+                        : "^");
+            hor_line(max - min - 1,
+                "",
+                flags & FLAG_UTF
+                    ? last_l > this_l
+                        ? "\u255b\n"
+                        : "\u2555\n"
+                    : last_l > this_l
+                        ? "'\n"
+                        : ".\n");
+        } /* else */
+    } else {
+        if (lineno++) puts("");
+    } /* if */
+
+    for (i = 0; i < h; i++) {
+        int j;
+        if (flags & FLAG_FRAME && len)
+            printf(flags & FLAG_UTF
+                ? "\u2502 "
+                : "| ");
+        for (j = 0; j < len; j++) {
+            struct chrinfo *p = getchrinfo(l[j]);
+            int pre1 = j
+                    ? 2
+                    : 0,
+                pre2 = flags & FLAG_MONOSP
+                    ? (max_width - p->w) >> 1
+                    : 0;
+            printf("%*s%-*s",
+                    pre1 + pre2, "",
+                    (int)(flags & FLAG_MONOSP
+                        ? max_width - pre2
+                        : p->w),
+                    i < p->h
+                        ? p->s[i]
+                        : "");
         } /* for */
-        last_l = this_l;
+        puts(flags & FLAG_FRAME && len
+            ? flags & FLAG_UTF
+                ? " \u2502"
+                : " |"
+            : "");
+    } /* for */
+    return this_l;
+}
+
+static void
+process(
+        FILE *f)
+{
+    wchar_t line[BUFSIZ];
+    size_t last_l = 0;
+
+    while (fgetws(line, sizeof line, f)) {
+        last_l = proc_line(line, last_l);
     } /* while */
     if (flags & FLAG_FRAME && last_l) {
-        hor_line(this_l,
+        hor_line(last_l,
             flags & FLAG_UTF
                 ? "\u2558\u2550"
                 : "`=",
@@ -2410,7 +2447,11 @@ void process(FILE *f)
     } /* if */
 } /* process */
 
-void hor_line(size_t len, const char *lft, const char *rgt)
+static void
+hor_line(
+        size_t len,
+        const char *lft,
+        const char *rgt)
 {
     char *the_line = flags & FLAG_UTF
         ?  "\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550"
