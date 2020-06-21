@@ -7,7 +7,7 @@ DATE=/bin/date
 ECHO=/bin/echo
 SLEEP=/bin/sleep
 WC=/usr/bin/wc
-BANNER=`which banner`
+BANNER=`which sysvbanner`
 
 case "$1" in
     -*) BANNEROPTS="$1"; shift;;
@@ -27,7 +27,7 @@ case "$1" in
     date*)
         DELAY=0.2; FORMAT="%x %a%n%X %Z";;
     *)
-        DELAY=1; FORMAT="$1";;
+        DELAY=1; FORMAT="$*";;
 esac
 
 g="[32m"

@@ -2298,7 +2298,7 @@ main(
                 wchar_t line[1024], *p = line;
                 mbstate_t st;
                 size_t l = mbsrtowcs(
-                        line, &argv[i],
+                        line, (const char **)&argv[i],
                         strlen(argv[i]), &st);
                 line[l] = 0;
                 line_l = proc_line(line, line_l);
