@@ -15,5 +15,5 @@ clean:
 sysvbanner_objs = banner.o
 toclean += $(sysvbanner_objs)
 
-sysvbanner: $(sysvbanner_objs)
-	$(CC) $(LDFLAGS) -o $@ $($@_srcs) $($@_objs) $($@_ldflags) $($@_libs) $(LIBS)
+sysvbanner: $(sysvbanner_deps) $(sysvbanner_objs)
+	$(CC) $(LDFLAGS) -o $@ $($@_objs) $($@_ldfl) $($@_libs) $(LIBS)

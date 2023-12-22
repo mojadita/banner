@@ -275,14 +275,14 @@ static char *c_3[] = {
 };
 
 static char *c_4[] = {
-	"    0",
-	"   00",
-	"  0 0",
-	" 0  0",
-	"0000000",
-	"    0",
-	"   000",
-	0
+    "    0",
+    "   00",
+    "  0 0",
+    " 0  0",
+    "0000000",
+    "    0",
+    "   000",
+    0
 };
 
 static char *c_5[] = {
@@ -2242,8 +2242,8 @@ int max_width = 0;
 
 int
 main(
-        int argc,
-        char **argv)
+        int   argc,
+        char *argv[])
 {
     int opt;
 
