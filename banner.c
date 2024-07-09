@@ -10,13 +10,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <locale.h>
+#include <unistd.h>
 #include <wchar.h>
+#include <sys/wait.h>
 
 #define F(fmt) __FILE__":%d:%s: " fmt, __LINE__, __func__
-
-#ifndef UTF
-#define UTF 0
-#endif
+#define ERR(_fmt, ...) fprintf(stderr, F(_fmt), ##__VA_ARGS__)
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
@@ -1113,10 +1112,10 @@ static char *c_tilde[] = {
 };
 
 static char *c_iexclam[] = {
-    "0",
+	"",
+	"",
+	"0",
     "",
-    "0",
-    "0",
     "0",
     "0",
     "0",
@@ -2211,7 +2210,7 @@ static struct chrinfo latin1_1[] = {
 
 static struct range ranges[] = {
     { 0xfffe, 0xffff, ci_invalid },
-    { ' ', 0x7f, latin1_0 },
+    { ' ', '~',   latin1_0 },
     { 0xa0, 0xff, latin1_1 },
 
     { 0, 0, NULL },
@@ -2233,28 +2232,48 @@ getchrinfo(
         : ci_invalid;
 } /* getchrinfo */
 
-int flags = 0;
+#define UL (flags & FLAG_UTF ? "\u250c\u2500"     : ",-")
+#define UR (flags & FLAG_UTF ? "\u2500\u2510\n"   : "-.\n")
+#define LL (flags & FLAG_UTF ? "\u2514\u2500"     : "`-")
+#define LR (flags & FLAG_UTF ? "\u2500\u2518\n"   : "-'\n")
+
+#define TT (flags & FLAG_UTF ? "\u2500\u252c"     : "-v")
+#define BT (flags & FLAG_UTF ? "\u2500\u2534"     : "-^")
+#define LT (flags & FLAG_UTF ? "\u251c\u2500"     : ">-")
+#define RT (flags & FLAG_UTF ? "\u2500\u2524\n"   : "-<\n")
+
+#define LB (flags & FLAG_UTF ? "\u2502 "          : "| ")
+#define RB (flags & FLAG_UTF ? "\u2007\u2502\n"   : " |\n")
+#define TB (flags & FLAG_UTF ? "\u2500"           : "-")
+#define BB (flags & FLAG_UTF ? "\u2500"           : "-")
+#define SP (sp ? sp : flags & FLAG_UTF ? "\u2007" : " ")
+
 #define FLAG_MONOSP         (1 << 0)
 #define FLAG_FRAME          (1 << 1)
 #define FLAG_UTF            (1 << 2)
 #define FLAG_ARGS_ARE_FILES (1 << 3)
+#define FLAG_FORK			(1 << 4)
+
+int flags = FLAG_FORK;
+
 int max_width = 0;
 
 int
-main(
-        int   argc,
-        char *argv[])
+main(int argc, char *argv[])
 {
     int opt;
+	char *sp = NULL;
 
-    setlocale(LC_ALL, "");
+	setlocale(LC_ALL, "");
 
-    while ((opt = getopt(argc, argv, "afmu")) != EOF) {
+    while ((opt = getopt(argc, argv, "afmnus:")) != EOF) {
         switch(opt) {
         case 'a': flags |= FLAG_ARGS_ARE_FILES; break;
         case 'f': flags |= FLAG_FRAME; break;
         case 'm': flags |= FLAG_MONOSP; break;
+		case 'n': flags &= ~FLAG_FORK; break;
         case 'u': flags |= FLAG_UTF; break;
+		case 's': sp = optarg; break;
         } /* switch */
     } /* while */
 
@@ -2264,18 +2283,71 @@ main(
     struct range *r;
     for (r = ranges; r->ci; r++) {
         int c, i;
+
         for (i = 0, c = r->fst; c < r->lst; i++, c++) {
             int j;
 
             for (j = 0; r->ci[i].s[j]; j++) {
+				/* these are ASCII */
                 int n = strlen(r->ci[i].s[j]);
-                if (r->ci[i].w < n) r->ci[i].w = n;
+                if (r->ci[i].w < n) {
+					r->ci[i].w = n;
+				}
             } /* for */
+
             if (max_width < r->ci[i].w)
                 max_width = r->ci[i].w;
             r->ci[i].h = j;
         } /* for */
     } /* for */
+
+	if (flags & FLAG_FORK) {
+		/* to redirect output to subprocess */
+		int fd[2];
+		int res = pipe(fd);
+
+		fflush(stdout);
+		switch (fork()) {
+
+		case -1:
+			ERR("fork: %s (errno = %d)\n",
+				strerror(errno), errno);
+			exit(EXIT_FAILURE);
+
+		case 0: /* child process */
+			dup2(fd[0], 0); /* redirect stdin */
+			close(fd[1]);
+			close(fd[0]);
+			int c;
+			while ((c = fgetc(stdin)) != EOF) {
+				switch (c) {
+				case ' ':
+					fputs(SP, stdout);
+					break;
+
+				case '-':
+					fputs(TB, stdout);
+					break;
+
+				default:
+					fputc(c, stdout);
+					break;
+				} /* switch */
+			} /* while */
+			exit(EXIT_SUCCESS);
+		} /* switch */
+
+		/* parent code */
+		res = dup2(fd[1], 1); /* redirect stdout */
+		if (res < 0) {
+			ERR("dup2: %s\n", strerror(errno));
+			close(1);
+			wait(NULL);
+			exit(EXIT_FAILURE);
+		}
+		close(fd[0]);
+		close(fd[1]);
+	}
 
     if (argc) {
         int i;
@@ -2283,46 +2355,38 @@ main(
             for (i = 0; i < argc; i++) {
                 FILE *f = fopen(argv[i], "r");
                 if (!f) {
-                    fprintf(stderr,
-                            F("fopen: %s: %s (errno = %d)\n"),
-                            argv[i], strerror(errno), errno);
+                    ERR("fopen: %s: %s (errno = %d)\n",
+						argv[i], strerror(errno), errno);
                     exit(EXIT_FAILURE);
                 } /* if */
                 process(f);
                 fclose(f);
             }
-        } else { /* ARGS are arguments */
+        } else { /* ARGS are strings to be printed */
             size_t line_l = 0;
             for (i = 0; i < argc; i++) {
-#define NELEM(_line) (sizeof (_line) / sizeof (_line)[0])
-                wchar_t line[1024], *p = line;
-                mbstate_t st;
-                size_t l = mbsrtowcs(
+                wchar_t line[1024];
+                mbstate_t st = {0};
+                ssize_t l = mbsrtowcs(
                         line, (const char **)&argv[i],
                         strlen(argv[i]), &st);
                 line[l] = 0;
                 line_l = proc_line(line, line_l);
-#undef NELEM
             }
             if (flags & FLAG_FRAME && line_l) {
-                hor_line(line_l,
-                    flags & FLAG_UTF
-                        ? "\u2558\u2550"
-                        : "`=",
-                    flags & FLAG_UTF
-                        ? "\u2550\u255b\n"
-                        : "='\n");
+                hor_line(line_l, LL, LR);
             } /* if */
         }
     } else {
         process(stdin);
     } /* else */
+	fclose(stdout);
+	if (flags & FLAG_FORK)
+		wait(NULL);
 } /* main */
 
 static size_t
-proc_line(
-        wchar_t *line,
-        size_t last_l)
+proc_line(wchar_t *line, size_t last_l)
 {
     static long lineno = 0;
     size_t this_l = 0;
@@ -2343,52 +2407,16 @@ proc_line(
 
     if (flags & FLAG_FRAME && (last_l || this_l)) {
         if (last_l == 0) {
-            hor_line(this_l,
-                flags & FLAG_UTF
-                    ? "\u2552\u2550"
-                    : ",=",
-                flags & FLAG_UTF
-                    ? "\u2550\u2555\n"
-                    : "=.\n");
+            hor_line(this_l, UL, UR);
         } else if (this_l == 0) {
-            hor_line(last_l,
-                flags & FLAG_UTF
-                    ? "\u2558\u2550"
-                    : "`=",
-                flags & FLAG_UTF
-                    ? "\u2550\u255b\n"
-                    : "='\n");
+            hor_line(last_l, LL, LR);
         } else if (last_l == this_l) {
-            hor_line(last_l,
-                flags & FLAG_UTF
-                    ? "\u255e\u2550"
-                    : ">=",
-                flags & FLAG_UTF
-                    ? "\u2550\u2561\n"
-                    : "=<\n");
+            hor_line(last_l, LT, RT);
         } else { /* last_l != this_l, both != 0 */
             size_t min = MIN(last_l, this_l);
             size_t max = MAX(last_l, this_l);
-            hor_line(min + 1,
-                flags & FLAG_UTF
-                    ? "\u255e\u2550"
-                    : ">=",
-                flags & FLAG_UTF
-                    ? last_l > this_l
-                        ? "\u2564"
-                        : "\u2567"
-                    : last_l > this_l
-                        ? "v"
-                        : "^");
-            hor_line(max - min - 1,
-                "",
-                flags & FLAG_UTF
-                    ? last_l > this_l
-                        ? "\u255b\n"
-                        : "\u2555\n"
-                    : last_l > this_l
-                        ? "'\n"
-                        : ".\n");
+            hor_line(min, LT, last_l > this_l ? TT : BT);
+            hor_line(max - min - 2, "", last_l > this_l ? LR : UR);
         } /* else */
     } else {
         if (lineno++) puts("");
@@ -2397,9 +2425,7 @@ proc_line(
     for (i = 0; i < h; i++) {
         int j;
         if (flags & FLAG_FRAME && len)
-            printf(flags & FLAG_UTF
-                ? "\u2502 "
-                : "| ");
+            printf(LB);
         for (j = 0; j < len; j++) {
             struct chrinfo *p = getchrinfo(l[j]);
             int pre1 = j
@@ -2417,18 +2443,16 @@ proc_line(
                         ? p->s[i]
                         : "");
         } /* for */
-        puts(flags & FLAG_FRAME && len
-            ? flags & FLAG_UTF
-                ? " \u2502"
-                : " |"
-            : "");
+        fputs(flags & FLAG_FRAME && len
+            ? RB
+            : "\n",
+			stdout);
     } /* for */
     return this_l;
-}
+} /* proc_line */
 
 static void
-process(
-        FILE *f)
+process(FILE *f)
 {
     wchar_t line[BUFSIZ];
     size_t last_l = 0;
@@ -2437,13 +2461,7 @@ process(
         last_l = proc_line(line, last_l);
     } /* while */
     if (flags & FLAG_FRAME && last_l) {
-        hor_line(last_l,
-            flags & FLAG_UTF
-                ? "\u2558\u2550"
-                : "`=",
-            flags & FLAG_UTF
-                ? "\u2550\u255b\n"
-                : "='\n");
+        hor_line(last_l, LL, LR);
     } /* if */
 } /* process */
 
@@ -2453,13 +2471,8 @@ hor_line(
         const char *lft,
         const char *rgt)
 {
-    char *the_line = flags & FLAG_UTF
-        ?  "\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550"
-           "\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550"
-           "\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550"
-           "\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550"
-        :  "============================================================";
-    if (flags & FLAG_UTF) len *= 3;
+    char *the_line = 
+        "------------------------------------------------------------";
     size_t the_line_size = strlen(the_line);
     printf("%s", lft);
     while (len > the_line_size) {
