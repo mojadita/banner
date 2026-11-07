@@ -1,0 +1,42 @@
+.Dd Jul 28 2025
+.Dt SYSVBANNER 1
+.Os
+.Sh NAME
+.Nm sysvbanner
+.Nd print large case letters on stdout
+.Sh SYNOPSIS
+.Nm sysvbanner
+.Op Fl afmu
+.Op Ar args ...
+.Sh DESCRIPTION
+The
+.Nm utility processes arguments to produce output in large letters.
+.Pp
+Arguments can be files (depending on option
+.Fl a )
+or strings (if option
+.Fl a
+is not specified).
+Or in case no arguments are specified, the program processes
+.Ar stdin
+and prints input in large letters, left justified.
+.Sh OPTIONS
+.Bl -tag
+.It Fl a
+allows the user to specify that arguments are files to be processed.
+.It Fl f
+makes
+.Nm
+to draw a frame around the lines of text it produces.
+This frame is drawn using adequate ascii characters to simulate the frame.
+If
+.Fl u
+is specified, then UTF-8 box characters to produce the frame are used.
+.It Fl m
+Draws characters using a monospace font (it uses the same font, but all
+characters are drawn with the same width) to simulate typewriter output.
+.It Fl u
+Uses Unicode box characters to build the frame around the text.
+.El
+.Sh AUTHOR
+.An Luis Colorado Aq Mt luiscoloradourcola@gmail.com

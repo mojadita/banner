@@ -1,2 +1,4 @@
 *.o
 banner
+sysvbanner
+sysvbanner.1.gz
